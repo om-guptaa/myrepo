@@ -87,3 +87,35 @@ public class Main {
         return metaDataMap;
     }
 }
+
+
+
+
+import java.util.*;
+import org.yaml.snakeyaml.*;
+import java.io.*;
+
+public class NetworkPolicyParser {
+    public static void main(String[] args) throws FileNotFoundException {
+        // Load the YAML file into a String
+        String yamlFile = new Scanner(new File("network_policy.yaml")).useDelimiter("\\Z").next();
+        
+        // Parse the YAML file into a Map
+        Yaml yaml = new Yaml();
+        List<Map<String, Object>> policies = (List<Map<String, Object>>) yaml.load(yamlFile);
+
+        // Loop over each policy and extract the metadata.name and ports
+        for (Map<String, Object> policy : policies) {
+            Map<String, Object> metadata = (Map<String, Object>) policy.get("metadata");
+            String name = (String) metadata.get("name");
+            List<Integer> ports = new ArrayList<Integer>();
+            List<Map<String, Object>> egressList = (List<Map<String, Object>>) policy.get("spec.egress");
+            for (Map<String, Object> egress : egressList) {
+                List<Integer> portList = (List<Integer>) egress.get("ports");
+                ports.addAll(portList);
+            }
+            System.out.println(name + ": " + ports);
+        }
+    }
+}
+

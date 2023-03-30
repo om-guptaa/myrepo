@@ -193,3 +193,47 @@ public class YamlParser {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    
+    
+    
+    
+     Iterable<Object> itr = yaml.loadAll(inputStream);
+      for (Object o : itr) {
+        Map<String, Object> map = (Map<String, Object>) o;
+        Map<String, Object> metadata = (Map<String, Object>) map.get("metadata");
+        String name = (String) metadata.get("name");
+        List<Map<String, Object>> egress = (List<Map<String, Object>>) ((Map<String, Object>) map.get("spec")).get("egress");
+        for (Map<String, Object> e : egress) {
+          Map<String, Object> destination = null;
+          List<Object> ports = null;
+          if (e.containsKey("destination")) {
+            destination = (Map<String, Object>) e.get("destination");
+          }
+          if (destination != null && destination.containsKey("ports")) {
+            ports = (List<Object>) destination.get("ports");
+          } else if (e.containsKey("ports")) {
+            ports = (List<Object>) e.get("ports");
+          }
+          if (ports != null) {
+            for (Object port : ports) {
+              if (port instanceof String) {
+                System.out.println("Name: " + name + ", Port: " + port);
+              } else if (port instanceof Map) {
+                Map<String, Object> portMap = (Map<String, Object>) port;
+                String protocol = (String) portMap.get("protocol");
+                Object portNumberObj = portMap.get("port");
+                String portNumber = null;
+                if (portNumberObj instanceof String) {
+                  portNumber = (String) portNumberObj;
+                } else if (portNumberObj instanceof Integer) {
+                  portNumber = Integer.toString((Integer) portNumberObj);
+                }
+                System.out.println("Name: " + name + ", Protocol: " + protocol + ", Port: " + portNumber);
+              }
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }

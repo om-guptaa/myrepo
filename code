@@ -1,0 +1,33 @@
+import java.io.FileInputStream;
+import java.util.List;
+import java.util.Map;
+
+import org.yaml.snakeyaml.Yaml;
+
+public class ExtractMetadata {
+    public static void main(String[] args) throws Exception {
+        // read YAML file
+        Yaml yaml = new Yaml();
+        FileInputStream inputStream = new FileInputStream("file.yaml");
+        Iterable<Object> iterable = yaml.loadAll(inputStream);
+        
+        // iterate through YAML documents
+        for (Object object : iterable) {
+            Map<String, Object> document = (Map<String, Object>) object;
+            
+            // extract metadata:name
+            Map<String, Object> metadata = (Map<String, Object>) document.get("metadata");
+            String name = (String) metadata.get("name");
+            
+            // extract egress:ports
+            Map<String, Object> spec = (Map<String, Object>) document.get("spec");
+            List<Map<String, Object>> egressList = (List<Map<String, Object>>) spec.get("egress");
+            for (Map<String, Object> egress : egressList) {
+                List<Integer> ports = (List<Integer>) egress.get("ports");
+                System.out.println("Metadata name: " + name + ", Egress ports: " + ports);
+            }
+        }
+        
+        inputStream.close();
+    }
+}

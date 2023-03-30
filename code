@@ -237,3 +237,51 @@ public class YamlParser {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    
+    
+    
+    
+     Yaml yaml = new Yaml();
+        File file = new File("test.yaml");
+        FileInputStream fileInputStream = new FileInputStream(file);
+        Iterable<Object> objects = yaml.loadAll(fileInputStream);
+
+        Map<String, List<String>> nameToPorts = new HashMap<>();
+
+        for (Object object : objects) {
+            Map<String, Object> data = (Map<String, Object>) object;
+            if (data.containsKey("metadata")) {
+                Map<String, Object> metadata = (Map<String, Object>) data.get("metadata");
+                if (metadata.containsKey("name")) {
+                    String name = (String) metadata.get("name");
+                    List<String> ports = new ArrayList<>();
+                    if (nameToPorts.containsKey(name)) {
+                        ports = nameToPorts.get(name);
+                    }
+                    if (data.containsKey("spec")) {
+                        Map<String, Object> spec = (Map<String, Object>) data.get("spec");
+                        if (spec.containsKey("egress")) {
+                            List<Map<String, Object>> egressList = (List<Map<String, Object>>) spec.get("egress");
+                            for (Map<String, Object> egress : egressList) {
+                                if (egress.containsKey("ports")) {
+                                    Object port = egress.get("ports");
+                                    if (port instanceof List) {
+                                        List<String> portList = (List<String>) port;
+                                        ports.addAll(portList);
+                                    } else if (port instanceof Map) {
+                                        Map<String, Object> portMap = (Map<String, Object>) port;
+                                        String portNumber = portMap.get("port").toString();
+                                        String protocol = (String) portMap.get("protocol");
+                                        ports.add(portNumber + "/" + protocol);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    nameToPorts.put(name, ports);
+                }
+            }
+        }
+
+        System.out.println("Name to Ports mapping: " + nameToPorts);
+    }

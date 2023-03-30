@@ -64,3 +64,54 @@ public class YamlParser {
     }
   }
 }
+
+
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import org.yaml.snakeyaml.Yaml;
+import java.util.Map;
+import java.util.List;
+
+public class YamlParser {
+  public static void main(String[] args) {
+    Yaml yaml = new Yaml();
+    try {
+      InputStream inputStream = new FileInputStream(new File("file.yaml"));
+      Iterable<Object> itr = yaml.loadAll(inputStream);
+      for (Object o : itr) {
+        Map<String, Object> map = (Map<String, Object>) o;
+        Map<String, Object> metadata = (Map<String, Object>) map.get("metadata");
+        String name = (String) metadata.get("name");
+        List<Map<String, Object>> egress = (List<Map<String, Object>>) ((Map<String, Object>) map.get("spec")).get("egress");
+        for (Map<String, Object> e : egress) {
+          Map<String, Object> destination = null;
+          List<String> ports = null;
+          if (e.containsKey("destination")) {
+            destination = (Map<String, Object>) e.get("destination");
+          }
+          if (destination != null && destination.containsKey("ports")) {
+            ports = (List<String>) destination.get("ports");
+          } else if (e.containsKey("ports")) {
+            ports = (List<String>) e.get("ports");
+          }
+          if (ports != null) {
+            for (String port : ports) {
+              if (port instanceof String) {
+                System.out.println("Name: " + name + ", Port: " + port);
+              } else if (port instanceof Map) {
+                Map<String, Object> portMap = (Map<String, Object>) port;
+                String protocol = (String) portMap.get("protocol");
+                int portNumber = (int) portMap.get("port");
+                System.out.println("Name: " + name + ", Protocol: " + protocol + ", Port: " + portNumber);
+              }
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+}

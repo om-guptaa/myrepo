@@ -1,4 +1,21 @@
-   List<String> filePaths = new ArrayList<>();
+  To generate an excel report that compares two or more egress files, you can modify the existing code to read and process multiple files. Here is a sample code that takes a list of file paths, reads each file, extracts the relevant information, and generates an excel report:
+
+java
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.yaml.snakeyaml.Yaml;
+  List<String> filePaths = new ArrayList<>();
         filePaths.add("file1.yml");
         filePaths.add("file2.yml");
         Map<String, List<String>> dataMap = new LinkedHashMap<>();

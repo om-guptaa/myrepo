@@ -1,46 +1,33 @@
 
-        try {
-            InputStream inputStream = new FileInputStream("file.yaml");
-
-            Yaml yaml = new Yaml();
-            Iterable<Object> documents = yaml.loadAll(inputStream);
-
-            for (Object document : documents) {
-                if (document instanceof Map) {
-                    Map<String, Object> map = (Map<String, Object>) document;
-
-                    // Check if the document is of type NetworkPolicy
-                    if (map.get("kind").equals("NetworkPolicy")) {
-                        Map<String, Object> metadata = (Map<String, Object>) map.get("metadata");
-
-                        // Extract the name field from metadata
-                        String name = (String) metadata.get("name");
-
-                        Map<String, Object> spec = (Map<String, Object>) map.get("spec");
-
-                        // Extract the ports based on the egress structure
-                        List<Map<String, Object>> egressList = (List<Map<String, Object>>) spec.get("egress");
-                        for (Map<String, Object> egress : egressList) {
-                            if (egress.containsKey("ports")) {
-                                Object ports = egress.get("ports");
-                                if (ports instanceof List) {
-                                    List<String> portList = (List<String>) ports;
-                                    for (String port : portList) {
-                                        System.out.println("Name: " + name + ", Port: " + port);
+        Iterable<Object> documents = yaml.loadAll(file.getAbsolutePath());
+        for (Object document : documents) {
+            Map<String, Object> data = (Map<String, Object>) document;
+            if (data.containsKey("metadata")) {
+                Map<String, Object> metadata = (Map<String, Object>) data.get("metadata");
+                if (metadata.containsKey("name")) {
+                    String name = (String) metadata.get("name");
+                    Map<String, Object> spec = (Map<String, Object>) data.get("spec");
+                    List<Map<String, Object>> egressList = (List<Map<String, Object>>) spec.get("egress");
+                    for (Map<String, Object> egress : egressList) {
+                        if (egress.containsKey("ports")) {
+                            Object ports = egress.get("ports");
+                            if (ports instanceof List) {
+                                List<Object> portList = (List<Object>) ports;
+                                for (Object port : portList) {
+                                    if (port instanceof String) {
+                                        System.out.println(name + " - " + port);
+                                    } else if (port instanceof Map) {
+                                        Map<String, Object> portMap = (Map<String, Object>) port;
+                                        String portNumber = portMap.get("port").toString();
+                                        String protocol = portMap.get("protocol").toString();
+                                        System.out.println(name + " - " + protocol + "/" + portNumber);
                                     }
-                                } else if (ports instanceof Map) {
-                                    Map<String, Object> portMap = (Map<String, Object>) ports;
-                                    String portNumber = String.valueOf(portMap.get("port"));
-                                    Map<String, Object> protocol = (Map<String, Object>) portMap.get("protocol");
-                                    String protocolName = (String) protocol.get("name");
-                                    System.out.println("Name: " + name + ", Port: " + portNumber + ", Protocol: " + protocolName);
                                 }
                             }
                         }
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
+}
